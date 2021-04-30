@@ -4,21 +4,13 @@
   "description": "Angular 11 with Electron (Typescript + SASS + Hot Reload)",
   "homepage": "https://github.com/maximegris/angular-electron",
   "author": {
-    "name": "Maxime GRIS",
-    "email": "maxime.gris@gmail.com"
+    "name": "Marcus Longwell",
+    "email": "marcuslongwell@gmail.com"
   },
   "keywords": [
-    "angular",
-    "angular 11",
-    "electron",
-    "nodejs",
-    "typescript",
-    "spectron",
-    "eslint",
-    "sass",
-    "windows",
-    "mac",
-    "linux"
+    "ftp",
+    "sftp",
+    "client"
   ],
   "main": "main.js",
   "private": true,
@@ -101,7 +93,7 @@
     "zone.js": "0.10.3"
   },
   "engines": {
-    "node": ">=10.13.0"
+    "node": ">=12.13.0"
   },
   "browserslist": [
     "chrome 83"
