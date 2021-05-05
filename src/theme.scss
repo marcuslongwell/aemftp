@@ -1,0 +1,77 @@
+@import '~@angular/material/theming';
+@include mat-core();
+
+/* For use in src/lib/core/theming/_palette.scss */
+// generated here: http://mcg.mbitson.com/#!?mcgpalette0=%230277bd&themename=mcgtheme
+$blue-palette: (
+  50 : #e1eff7,
+  100 : #b3d6eb,
+  200 : #81bbde,
+  300 : #4ea0d1,
+  400 : #288bc7,
+  500 : #0277bd,
+  600 : #026fb7,
+  700 : #0164ae,
+  800 : #015aa6,
+  900 : #014798,
+  A100 : #c3dbff,
+  A200 : #90bcff,
+  A400 : #5d9dff,
+  A700 : #448dff,
+  contrast: (
+    50 : #000000,
+    100 : #000000,
+    200 : #000000,
+    300 : #000000,
+    400 : #ffffff,
+    500 : #ffffff,
+    600 : #ffffff,
+    700 : #ffffff,
+    800 : #ffffff,
+    900 : #ffffff,
+    A100 : #000000,
+    A200 : #000000,
+    A400 : #000000,
+    A700 : #000000,
+  )
+);
+
+/* For use in src/lib/core/theming/_palette.scss */
+$green-palette: (
+  50 : #e7ede4,
+  100 : #c2d2bc,
+  200 : #99b48f,
+  300 : #709662,
+  400 : #528040,
+  500 : #33691e,
+  600 : #2e611a,
+  700 : #275616,
+  800 : #204c12,
+  900 : #143b0a,
+  A100 : #8cff74,
+  A200 : #62ff41,
+  A400 : #38ff0e,
+  A700 : #2bf300,
+  contrast: (
+    50 : #000000,
+    100 : #000000,
+    200 : #000000,
+    300 : #000000,
+    400 : #ffffff,
+    500 : #ffffff,
+    600 : #ffffff,
+    700 : #ffffff,
+    800 : #ffffff,
+    900 : #ffffff,
+    A100 : #000000,
+    A200 : #000000,
+    A400 : #000000,
+    A700 : #000000,
+  )
+);
+
+$my-app-primary: mat-palette($blue-palette);
+$my-app-accent: mat-palette($green-palette);
+$my-app-warn: mat-palette($mat-deep-orange);
+$my-app-theme: mat-light-theme($my-app-primary, $my-app-accent, $my-app-warn);
+@include angular-material-theme($my-app-theme);

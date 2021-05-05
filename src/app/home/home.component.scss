@@ -1,3 +1,6 @@
-:host {
-  
+@import '~@angular/material/theming';
+@import '../../theme';
+
+.home-component {
+  background-color: mat-color($my-app-accent);
 }
