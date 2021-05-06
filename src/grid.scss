@@ -1,0 +1,113 @@
+
+
+
+$xs: 0px;
+$sm: 576px;
+$md: 768px;
+$lg: 992px;
+$xl: 1200px;
+
+$screen-sizes: (
+  "xs": $xs,
+  "sm": $sm,
+  "md": $md,
+  "lg": $lg,
+  "xl": $xl
+);
+
+@mixin breakpoint($size) {
+  @media (min-width: $size) {
+    @content;
+  }
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  box-sizing: border-box;
+
+  &.direction-reverse {
+    flex-direction: row-reverse;
+  }
+
+  &.nowrap {
+    flex-wrap: nowrap;
+  }
+
+  &.wrap-reverse {
+    flex-wrap: wrap-reverse;
+  }
+
+  &.justify-start {
+    justify-content: flex-start;
+  }
+
+  &.justify-end {
+    justify-content: flex-end;
+  }
+
+  &.justify-center {
+    justify-content: center;
+  }
+
+  &.justify-between {
+    justify-content: space-between;
+  }
+
+  &.justify-around {
+    justify-content: space-around;
+  }
+
+  &.justify-evenly {
+    justify-content: space-evenly;
+  }
+
+  &.align-baseline {
+    align-items: baseline;
+  }
+}
+
+.col {
+  // background-color: rgba(86, 61, 124, 0.15);
+  // border: 2px solid rgba(86, 61, 124, .2);
+  // padding: 10px;
+  box-sizing: border-box;
+  display: block;
+  flex-basis: 0px;
+  flex-grow: 1;
+  max-width: 100%;
+
+  @each $size, $px in $screen-sizes {
+    @for $i from 1 through 12 {
+      @media (min-width: $px) {
+        &.#{$size}-#{$i} {
+          flex-grow: 0;
+          flex-shrink: 0;
+          flex-basis: percentage($i / 12);
+          max-width: percentage($i / 12);
+        }
+      }
+    }
+
+    @media (min-width: $px) {
+      &.#{$size}-auto {
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: auto;
+        width: auto;
+        max-width: none;
+      }
+
+      &.#{$size}-hide {
+        display: none;
+      }
+    }
+  }
+
+  &.break {
+    flex-basis: 100%;
+    width: 100%;
+    display: block;
+  }
+}

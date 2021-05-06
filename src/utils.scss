@@ -1,0 +1,70 @@
+@import '~@angular/material/theming';
+@import './theme';
+
+// box styles
+.full-width {
+  width: 100%;
+}
+
+// spacing
+$space: 1rem;
+$spacers: (1: 0.25, 2: 0.5, 3: 1, 4: 1.5, 5: 3, 6: 4.5, 7: 6);
+$directions: ('t': 'top', 'b': 'bottom', 'l': 'left', 'r': 'right');
+
+@each $i, $spacer in $spacers {
+  $totalSpace: $space * $spacer;
+  .p-#{$i} {
+    padding: $totalSpace;
+  }
+
+  @each $key, $val in $directions {
+    .p#{$key}-#{$i} {
+      padding-#{$val}: $totalSpace;
+    }
+    
+    .m#{$key}-#{$i} {
+      margin-#{$val}: $totalSpace;
+    }
+  }
+
+  .px-#{$i} {
+    padding-left: $totalSpace;
+    padding-right: $totalSpace;
+  }
+
+  .py-#{$i} {
+    padding-top: $totalSpace;
+    padding-bottom: $totalSpace;
+  }
+
+  .mx-#{$i} {
+    margin-left: $totalSpace;
+    margin-left: $totalSpace;
+  }
+
+  .my-#{$i} {
+    margin-top: $totalSpace;
+    margin-bottom: $totalSpace;
+  }
+}
+
+// colors
+.fg-primary {
+  color: mat-color($primary-color-palette);
+}
+
+.bg-primary {
+  background-color: mat-color($primary-color-palette);
+}
+
+.bg-primary-light {
+  background-color: mat-color($primary-color-palette, )
+}
+
+.fg-secondary {
+  color: mat-color($accent-color-palette);
+}
+
+.bg-accent {
+  background-color: mat-color($accent-color-palette);
+}

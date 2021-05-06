@@ -2,5 +2,7 @@
 @import '../../theme';
 
 .home-component {
-  background-color: mat-color($my-app-accent);
+  .connect-row {
+    background-color: rgba(255, 255, 255, 0.5);
+  }
 }

@@ -1,6 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import './theme';
+@import './grid';
+@import './utils';
+
+*, ::after, ::before {
+  box-sizing: border-box;
+}
 
 html, body {
   margin: 0;
@@ -8,5 +14,6 @@ html, body {
 
   height: 100%;
   font-family: Arial, Helvetica, sans-serif;
+  background-color: white;
 }
 

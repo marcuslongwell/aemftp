@@ -37,41 +37,41 @@ $blue-palette: (
 );
 
 /* For use in src/lib/core/theming/_palette.scss */
-$green-palette: (
-  50 : #e7ede4,
-  100 : #c2d2bc,
-  200 : #99b48f,
-  300 : #709662,
-  400 : #528040,
-  500 : #33691e,
-  600 : #2e611a,
-  700 : #275616,
-  800 : #204c12,
-  900 : #143b0a,
-  A100 : #8cff74,
-  A200 : #62ff41,
-  A400 : #38ff0e,
-  A700 : #2bf300,
-  contrast: (
-    50 : #000000,
-    100 : #000000,
-    200 : #000000,
-    300 : #000000,
-    400 : #ffffff,
-    500 : #ffffff,
-    600 : #ffffff,
-    700 : #ffffff,
-    800 : #ffffff,
-    900 : #ffffff,
-    A100 : #000000,
-    A200 : #000000,
-    A400 : #000000,
-    A700 : #000000,
-  )
+$orange-palette: (
+  50 : #fcf2e7,
+    100 : #f8dec3,
+    200 : #f3c89c,
+    300 : #eeb274,
+    400 : #eaa256,
+    500 : #e69138,
+    600 : #e38932,
+    700 : #df7e2b,
+    800 : #db7424,
+    900 : #d56217,
+    A100 : #ffffff,
+    A200 : #ffe3d4,
+    A400 : #ffc3a1,
+    A700 : #ffb287,
+    contrast: (
+        50 : #000000,
+        100 : #000000,
+        200 : #000000,
+        300 : #000000,
+        400 : #000000,
+        500 : #000000,
+        600 : #000000,
+        700 : #000000,
+        800 : #000000,
+        900 : #ffffff,
+        A100 : #000000,
+        A200 : #000000,
+        A400 : #000000,
+        A700 : #000000,
+    )
 );
 
-$my-app-primary: mat-palette($blue-palette);
-$my-app-accent: mat-palette($green-palette);
-$my-app-warn: mat-palette($mat-deep-orange);
-$my-app-theme: mat-light-theme($my-app-primary, $my-app-accent, $my-app-warn);
-@include angular-material-theme($my-app-theme);
+$primary-color-palette: mat-palette($blue-palette);
+$accent-color-palette: mat-palette($orange-palette);
+$warning-color-palette: mat-palette($mat-deep-orange);
+$color-theme: mat-light-theme($primary-color-palette, $accent-color-palette, $warning-color-palette);
+@include angular-material-theme($color-theme);
