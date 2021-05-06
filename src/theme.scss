@@ -73,5 +73,6 @@ $orange-palette: (
 $primary-color-palette: mat-palette($blue-palette);
 $accent-color-palette: mat-palette($orange-palette);
 $warning-color-palette: mat-palette($mat-deep-orange);
-$color-theme: mat-light-theme($primary-color-palette, $accent-color-palette, $warning-color-palette);
-@include angular-material-theme($color-theme);
+$light-theme: mat-light-theme($primary-color-palette, $accent-color-palette, $warning-color-palette);
+$dark-theme: mat-dark-theme($primary-color-palette, $accent-color-palette, $warning-color-palette);
+@include angular-material-theme($dark-theme);
