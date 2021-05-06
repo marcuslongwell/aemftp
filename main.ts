@@ -1,6 +1,9 @@
 import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+import { ipcMain } from 'electron';
+// import FTPClient from 'ftp';
+const FTPClient = require('ftp');
 
 // Initialize remote module
 require('@electron/remote/main').initialize();
@@ -84,3 +87,35 @@ try {
   // Catch Error
   // throw e;
 }
+
+ipcMain.handle('ping', (): string => {
+  return 'pong';
+});
+
+ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
+  let host: string = args[0];
+  let port: string = args[1];
+  let user: string = args[2];
+  let pass: string = args[3];
+
+  let client = new FTPClient();
+  try {
+    await new Promise((resolve, reject): void => {
+      client.on('ready', (): void => {
+        return resolve(true);
+      });
+
+      client.on('close', (hadError: boolean): void => {
+        // send close to client through ipc
+      });
+
+      client.on('error', (err: Error): void => {
+        return reject(err);
+      });
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+
+  return true;
+});

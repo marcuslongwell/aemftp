@@ -3,29 +3,29 @@
     <div class="col px-2">
       <mat-form-field class="full-width">
         <mat-label>Host</mat-label>
-        <input matInput placeholder="localhost" value="" />
+        <input matInput [(ngModel)]="host" />
       </mat-form-field>
     </div>
     <div class="col px-2">
       <mat-form-field class="full-width">
         <mat-label>Port</mat-label>
-        <input matInput placeholder="21" value="" />
+        <input matInput [(ngModel)]="port" />
       </mat-form-field>
     </div>
     <div class="col px-2">
       <mat-form-field class="full-width">
         <mat-label>User</mat-label>
-        <input matInput placeholder="user" value="" />
+        <input matInput [(ngModel)]="user" />
       </mat-form-field>
     </div>
     <div class="col px-2">
       <mat-form-field class="full-width">
         <mat-label>Password</mat-label>
-        <input matInput type="password" value="" />
+        <input matInput type="password" [(ngModel)]="pass" />
       </mat-form-field>
     </div>
     <div class="col xs-auto px-2">
-      <button mat-raised-button>Connect</button>
+      <button mat-raised-button (click)="connect()">Connect</button>
     </div>
   </div>
 </div>
