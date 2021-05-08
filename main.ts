@@ -2,8 +2,10 @@ import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import { ipcMain } from 'electron';
+import { resolve } from 'node:path';
 // import FTPClient from 'ftp';
-const FTPClient = require('ftp');
+const FTPClient = require('promise-ftp');
+
 
 // Initialize remote module
 require('@electron/remote/main').initialize();
@@ -92,30 +94,44 @@ ipcMain.handle('ping', (): string => {
   return 'pong';
 });
 
-ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
+let ftpClient = new FTPClient();
+
+ipcMain.handle('connect', async (evt, args): Promise<boolean> => {
   let host: string = args[0];
   let port: string = args[1];
   let user: string = args[2];
   let pass: string = args[3];
 
-  let client = new FTPClient();
+  console.log(host, port, user, pass);
+  
   try {
-    await new Promise((resolve, reject): void => {
-      client.on('ready', (): void => {
-        return resolve(true);
-      });
+    await ftpClient.destroy();
+    ftpClient = new FTPClient();
 
-      client.on('close', (hadError: boolean): void => {
-        // send close to client through ipc
-      });
-
-      client.on('error', (err: Error): void => {
-        return reject(err);
-      });
+    await ftpClient.connect({
+      host: host,
+      port: port,
+      user: user,
+      password: pass
     });
-  } catch (err) {
-    throw new Error(err);
-  }
 
-  return true;
+    return true;
+  } catch (err) {
+    console.error(new Error(err));
+    return false;
+  }
+});
+
+ipcMain.handle('pwd', async (evt, ...args): Promise<string> => {
+  try {
+    return await ftpClient.pwd();
+  } catch (err) {
+    console.error(err);
+    return '';
+  }
+});
+
+ipcMain.handle('ls', async (evt, ...args): Promise<Array<any>> => {
+  let list = await ftpClient.list();
+  return list;
 });

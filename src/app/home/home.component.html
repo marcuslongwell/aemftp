@@ -28,4 +28,21 @@
       <button mat-raised-button (click)="connect()">Connect</button>
     </div>
   </div>
+  
+  <div class="row">
+    <div class="col xs-6">
+      <h1>Local Files</h1>
+    </div>
+    <div class="col xs-6">
+      <h1>Remote Files</h1>
+
+      <ul *ngFor="let file of remoteFiles">
+        <li class="listing">
+          <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder open</mat-icon>
+          <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.type != 'd'">description</mat-icon>
+          <span class="file-name">{{file.name}}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>
