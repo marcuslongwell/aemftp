@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, screen, shell } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 import * as os from 'os';
@@ -185,6 +185,24 @@ ipcMain.handle('cd', async (evt, ...args): Promise<boolean> => {
   // todo: make sure path exists and can cd first
 
   return true;
+});
+
+ipcMain.handle('open', async (evt, ...args): Promise<boolean> => {
+  let relativePath: string = args[0] || '';
+
+  if (relativePath.length < 1) throw new Error('Must specify a file name');
+
+  let fullPath: string = path.join(localBaseDir, localPath, relativePath);
+
+  try {
+    let err = await shell.openPath(fullPath);
+    if (err.length > 0) throw new Error(err);
+    return true;
+  } catch (err) {
+    // todo: send error back to client
+    console.error(err);
+    return false;
+  }
 });
 
 ipcMain.handle('put', async (evt, ...args): Promise<boolean> => {

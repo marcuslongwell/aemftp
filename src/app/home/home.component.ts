@@ -29,14 +29,18 @@ export class HomeComponent implements OnInit {
     await this.listFiles(false);
   }
 
-  async cd(remote: boolean, file: any): Promise<void> {
+  async open(remote: boolean, file: any): Promise<void> {
     if (!this.isConnected && remote) throw new Error('Not connected to FTP server');
 
-    if (file.type != 'd') return;
-
     try {
-      await this.electronService.ipcRenderer.invoke('cd', remote, file.name);
-      await this.listFiles(remote);
+      if (file.type == 'd') {
+        await this.electronService.ipcRenderer.invoke('cd', remote, file.name);
+        await this.listFiles(remote);
+      } else if (!remote) {
+        // if local, open file in os
+        await this.electronService.ipcRenderer.invoke('open', file.name);
+      }
+      
       return;
     } catch (err) {
       // todo: handle in ui
@@ -59,11 +63,11 @@ export class HomeComponent implements OnInit {
       }
 
       files.sort((a, b): number => {
-        if (a.type == 'd' && b.type != 'd') {
-           return -1;
-        } else {
-          return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
-        }
+        return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+      });
+
+      files.sort((a, b): number => {
+        return (a.type == 'd' && b.type != 'd') ? -1 : 0;
       });
 
       files.unshift({

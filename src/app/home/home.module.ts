@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { HomeRoutingModule } from './home-routing.module';
 
@@ -14,6 +15,6 @@ import { SharedModule } from '../shared/shared.module';
 @NgModule({
   declarations: [HomeComponent],
   imports: [CommonModule, SharedModule, HomeRoutingModule, BrowserAnimationsModule,
-    MatButtonModule, MatInputModule, MatFormFieldModule, MatIconModule]
+    MatButtonModule, MatInputModule, MatFormFieldModule, MatIconModule, MatMenuModule]
 })
 export class HomeModule {}
