@@ -30,6 +30,37 @@
       bottom: 0;
       overflow: auto;
 
+      .crumbs {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+
+        .crumb {
+          flex-grow: 0;
+          display: flex;
+          align-items: center;
+
+          .crumb-name, .root-crumb {
+            color: rgba(255, 255, 255, 0.85);
+
+            &:hover {
+              // color: white;
+              cursor: default;
+            }
+          }
+
+          .crumb-name {
+            padding: 10px 5px;
+          }
+
+          &:last-child {
+            .crumb-name {
+              color: white;
+            }
+          }
+        }
+      }
+
       .listings {
         padding-inline-start: 0px;
 

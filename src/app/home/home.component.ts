@@ -19,12 +19,13 @@ export class HomeComponent implements OnInit {
   private localFiles: Array<any>;
   private remotePWD: string;
   private localPWD: string;
+  private remoteCrumbs: Array<any>;
+  private localCrumbs: Array<any>;
 
   constructor(private router: Router) { }
 
   async ngOnInit(): Promise<void> {
     let res = await this.electronService.ipcRenderer.invoke('ping');
-    console.log(res);
     await this.listFiles(false);
   }
 
@@ -70,11 +71,29 @@ export class HomeComponent implements OnInit {
         type: 'd'
       });
 
+      // todo: test on windows client & windows ftp server
+      let crumbs: Array<any> = [];
+      console.log('pwd: ' + pwd);
+      let splitPath: Array<string> = pwd.split('/');
+
+      if (splitPath[0] == splitPath[1]) {
+        // top level directory, path was just a single slash
+        splitPath = splitPath.splice(0, 1);
+      }
+
+      for (let dir of splitPath) {
+        crumbs.push({
+          name: dir
+        });
+      }
+
       if (remote) {
         this.remotePWD = pwd;
+        this.remoteCrumbs = crumbs;
         this.remoteFiles = files;
       } else {
         this.localPWD = pwd;
+        this.localCrumbs = crumbs;
         this.localFiles = files;
       }
     } catch (err) {
@@ -94,6 +113,30 @@ export class HomeComponent implements OnInit {
       } else {
         throw new Error('Unable to connect for unknown reason');
       }
+    } catch (err) {
+      // todo: handle in ui
+      console.error(err);
+    }
+  }
+
+  async put(fileName: string): Promise<void> {
+    if (!this.isConnected) throw new Error('Cannot put file if not connected');
+
+    try {
+      await this.electronService.ipcRenderer.invoke('put', fileName);
+      await this.listFiles(true);
+    } catch (err) {
+      // todo: handle in ui
+      console.error(err);
+    }
+  }
+
+  async get(fileName: string): Promise<void> {
+    if (!this.isConnected) throw new Error('Cannot get file if not connected');
+
+    try {
+      await this.electronService.ipcRenderer.invoke('get', fileName);
+      await this.listFiles(false);
     } catch (err) {
       // todo: handle in ui
       console.error(err);

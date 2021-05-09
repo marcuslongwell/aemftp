@@ -36,27 +36,39 @@
       <div class="row">
         <div class="col xs-6">
           <h1 class="px-3">Local Files</h1>
-          <p class="px-3">{{localPWD}}</p>
+          <div class="px-3 crumbs">
+            <span class="crumb" *ngFor="let crumb of localCrumbs; let last = last;">
+              <mat-icon class="root-crumb" aria-hidden="false" aria-label="Root" *ngIf="!crumb.name">home</mat-icon>
+              <span class="crumb-name" *ngIf="crumb.name">{{crumb.name}}</span>
+              <mat-icon aria-hidden="false" aria-label="Chevron" *ngIf="!last">chevron_right</mat-icon>
+            </span>
+          </div>
 
-          <ul class="listings" *ngFor="let file of localFiles">
-            <li class="listing px-3 py-2" (click)="cd(false, file)">
-              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder open</mat-icon>
+          <ul class="listings">
+            <li class="listing px-3 py-2" *ngFor="let file of localFiles" (click)="cd(false, file)">
+              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder_open</mat-icon>
               <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.type != 'd'">description</mat-icon>
               <span class="px-1 file-name">{{file.name}}</span>
-              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.name != '..'">upload</mat-icon>
+              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.name != '..' && file.type != 'd'" (click)="put(file.name)">upload</mat-icon>
             </li>
           </ul>
         </div>
         <div class="col xs-6 px-3 remote-files">
           <h1 class="px-3">Remote Files</h1>
-          <p class="px-3">{{remotePWD}}</p>
+          <div class="px-3 crumbs">
+            <span class="crumb" *ngFor="let crumb of remoteCrumbs; let last = last;">
+              <mat-icon class="root-crumb" aria-hidden="false" aria-label="Root" *ngIf="!crumb.name">home</mat-icon>
+              <span class="crumb-name" *ngIf="crumb.name">{{crumb.name}}</span>
+              <mat-icon aria-hidden="false" aria-label="Chevron" *ngIf="!last">chevron_right</mat-icon>
+            </span>
+          </div>
 
-          <ul class="listings" *ngFor="let file of remoteFiles">
-            <li class="listing px-3 py-2" (click)="cd(true, file)">
-              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder open</mat-icon>
+          <ul class="listings">
+            <li class="listing px-3 py-2" *ngFor="let file of remoteFiles" (click)="cd(true, file)">
+              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder_open</mat-icon>
               <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.type != 'd'">description</mat-icon>
               <span class="px-1 file-name">{{file.name}}</span>
-              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.name != '..'">download</mat-icon>
+              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.name != '..' && file.type != 'd'" (click)="get(file.name)">download</mat-icon>
             </li>
           </ul>
         </div>

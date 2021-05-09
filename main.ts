@@ -186,3 +186,37 @@ ipcMain.handle('cd', async (evt, ...args): Promise<boolean> => {
 
   return true;
 });
+
+ipcMain.handle('put', async (evt, ...args): Promise<boolean> => {
+  let fileName: string = args[0];
+
+  // todo: check that file exists locally first maybe?
+  // todo: check if file exists on remote, prompt user for choice if it does
+  try {
+    await ftpClient.put(path.join(localBaseDir, localPath, fileName), path.join(remoteBaseDir, remotePath, fileName));
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+});
+
+ipcMain.handle('get', async (evt, ...args): Promise<boolean> => {
+  let fileName: string = args[0];
+
+  // todo: check that file exists on remote first maybe?
+  // todo: check if file exists on local, prompt user for choice if it does
+  try {
+    let fileStream = await ftpClient.get(path.join(remoteBaseDir, remotePath, fileName));
+    await new Promise((resolve, reject): void => {
+      fileStream.once('close', resolve);
+      fileStream.once('error', reject);
+      fileStream.pipe(fs.createWriteStream(path.join(localBaseDir, localPath, fileName)));
+    });
+    
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+});
