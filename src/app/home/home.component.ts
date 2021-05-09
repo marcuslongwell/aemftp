@@ -16,29 +16,70 @@ export class HomeComponent implements OnInit {
   private isConnected: boolean = false;
 
   private remoteFiles: Array<any>;
+  private localFiles: Array<any>;
+  private remotePWD: string;
+  private localPWD: string;
 
   constructor(private router: Router) { }
 
   async ngOnInit(): Promise<void> {
     let res = await this.electronService.ipcRenderer.invoke('ping');
     console.log(res);
+    await this.listFiles(false);
+  }
+
+  async cd(remote: boolean, file: any): Promise<void> {
+    if (!this.isConnected && remote) throw new Error('Not connected to FTP server');
+
+    if (file.type != 'd') return;
+
+    try {
+      await this.electronService.ipcRenderer.invoke('cd', remote, file.name);
+      await this.listFiles(remote);
+      return;
+    } catch (err) {
+      // todo: handle in ui
+      console.error(err);
+    }
   }
 
   async listFiles(remote: boolean) {
     if (!this.isConnected && remote) throw new Error('Not connected to FTP server');
 
-    if (remote) {
-      // list remote files in pwd
-      try {
-        let files = await this.electronService.ipcRenderer.invoke('ls');
-        console.log(files);
-        this.remoteFiles = files;
-      } catch (err) {
-        // todo: handle in ui
-        console.error(err);
+    let files: Array<any>;
+    let pwd: string;
+    try {
+      if (remote) {
+        pwd = await this.electronService.ipcRenderer.invoke('pwd', true);
+        files = await this.electronService.ipcRenderer.invoke('ls', true);
+      } else {
+        pwd = await this.electronService.ipcRenderer.invoke('pwd', false);
+        files = await this.electronService.ipcRenderer.invoke('ls', false);
       }
-    } else {
-      // list local files in pwd
+
+      files.sort((a, b): number => {
+        if (a.type == 'd' && b.type != 'd') {
+           return -1;
+        } else {
+          return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+        }
+      });
+
+      files.unshift({
+        name: '..',
+        type: 'd'
+      });
+
+      if (remote) {
+        this.remotePWD = pwd;
+        this.remoteFiles = files;
+      } else {
+        this.localPWD = pwd;
+        this.localFiles = files;
+      }
+    } catch (err) {
+      // todo: handle in ui
+      console.error(err);
     }
   }
 
@@ -46,7 +87,7 @@ export class HomeComponent implements OnInit {
     console.log('Connecting...');
     console.log(this.host + ':' + this.port + ', ' + this.user + ', ' + this.pass);
     try {
-      this.isConnected = await this.electronService.ipcRenderer.invoke('connect', [this.host, this.port, this.user, this.pass]);
+      this.isConnected = await this.electronService.ipcRenderer.invoke('connect', this.host, this.port, this.user, this.pass);
       
       if (this.isConnected) {
         await this.listFiles(true);

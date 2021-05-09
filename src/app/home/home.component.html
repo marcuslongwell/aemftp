@@ -1,48 +1,66 @@
 <div class="home-component">
-  <div class="row align-baseline p-1 px-3 connect-row">
-    <div class="col px-2">
-      <mat-form-field class="full-width">
-        <mat-label>Host</mat-label>
-        <input matInput [(ngModel)]="host" />
-      </mat-form-field>
-    </div>
-    <div class="col px-2">
-      <mat-form-field class="full-width">
-        <mat-label>Port</mat-label>
-        <input matInput [(ngModel)]="port" />
-      </mat-form-field>
-    </div>
-    <div class="col px-2">
-      <mat-form-field class="full-width">
-        <mat-label>User</mat-label>
-        <input matInput [(ngModel)]="user" />
-      </mat-form-field>
-    </div>
-    <div class="col px-2">
-      <mat-form-field class="full-width">
-        <mat-label>Password</mat-label>
-        <input matInput type="password" [(ngModel)]="pass" />
-      </mat-form-field>
-    </div>
-    <div class="col xs-auto px-2">
-      <button mat-raised-button (click)="connect()">Connect</button>
+  <div class="nav-panel">
+    <div class="row align-baseline p-1 px-3">
+      <div class="col px-2">
+        <mat-form-field class="full-width">
+          <mat-label>Host</mat-label>
+          <input matInput [(ngModel)]="host" />
+        </mat-form-field>
+      </div>
+      <div class="col px-2">
+        <mat-form-field class="full-width">
+          <mat-label>Port</mat-label>
+          <input matInput [(ngModel)]="port" />
+        </mat-form-field>
+      </div>
+      <div class="col px-2">
+        <mat-form-field class="full-width">
+          <mat-label>User</mat-label>
+          <input matInput [(ngModel)]="user" />
+        </mat-form-field>
+      </div>
+      <div class="col px-2">
+        <mat-form-field class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" [(ngModel)]="pass" />
+        </mat-form-field>
+      </div>
+      <div class="col xs-auto px-2">
+        <button mat-raised-button (click)="connect()">Connect</button>
+      </div>
     </div>
   </div>
   
-  <div class="row">
-    <div class="col xs-6">
-      <h1>Local Files</h1>
-    </div>
-    <div class="col xs-6">
-      <h1>Remote Files</h1>
+  <div class="files-panel">
+    <div class="files-inside">
+      <div class="row">
+        <div class="col xs-6">
+          <h1 class="px-3">Local Files</h1>
+          <p class="px-3">{{localPWD}}</p>
 
-      <ul *ngFor="let file of remoteFiles">
-        <li class="listing">
-          <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder open</mat-icon>
-          <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.type != 'd'">description</mat-icon>
-          <span class="file-name">{{file.name}}</span>
-        </li>
-      </ul>
+          <ul class="listings" *ngFor="let file of localFiles">
+            <li class="listing px-3 py-2" (click)="cd(false, file)">
+              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder open</mat-icon>
+              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.type != 'd'">description</mat-icon>
+              <span class="px-1 file-name">{{file.name}}</span>
+              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.name != '..'">upload</mat-icon>
+            </li>
+          </ul>
+        </div>
+        <div class="col xs-6 px-3 remote-files">
+          <h1 class="px-3">Remote Files</h1>
+          <p class="px-3">{{remotePWD}}</p>
+
+          <ul class="listings" *ngFor="let file of remoteFiles">
+            <li class="listing px-3 py-2" (click)="cd(true, file)">
+              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder open</mat-icon>
+              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.type != 'd'">description</mat-icon>
+              <span class="px-1 file-name">{{file.name}}</span>
+              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.name != '..'">download</mat-icon>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </div>
 </div>

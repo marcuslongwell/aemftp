@@ -1,8 +1,11 @@
 import { app, BrowserWindow, screen } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
+import * as os from 'os';
 import { ipcMain } from 'electron';
 import { resolve } from 'node:path';
+import * as fs from 'fs-extra';
+
 // import FTPClient from 'ftp';
 const FTPClient = require('promise-ftp');
 
@@ -95,8 +98,12 @@ ipcMain.handle('ping', (): string => {
 });
 
 let ftpClient = new FTPClient();
+let remoteBaseDir = '/';
+let localBaseDir = os.homedir();
+let remotePath = './';
+let localPath = './';
 
-ipcMain.handle('connect', async (evt, args): Promise<boolean> => {
+ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
   let host: string = args[0];
   let port: string = args[1];
   let user: string = args[2];
@@ -115,23 +122,67 @@ ipcMain.handle('connect', async (evt, args): Promise<boolean> => {
       password: pass
     });
 
+    remoteBaseDir = await ftpClient.pwd();
+
     return true;
   } catch (err) {
+    // todo: send err to ui
     console.error(new Error(err));
     return false;
   }
 });
 
 ipcMain.handle('pwd', async (evt, ...args): Promise<string> => {
+  let remote: boolean = args[0] || false;
+
   try {
-    return await ftpClient.pwd();
+    if (remote) return path.join(remoteBaseDir, remotePath);
+    else return path.join(localBaseDir, localPath);
   } catch (err) {
+    // todo: send err to ui
     console.error(err);
     return '';
   }
 });
 
 ipcMain.handle('ls', async (evt, ...args): Promise<Array<any>> => {
-  let list = await ftpClient.list();
-  return list;
+  let remote: boolean = args[0] || false;
+
+  try {
+    // todo: unify the return listing into a standardized object for remote & local
+    if (remote) {
+      let list = await ftpClient.list(path.join(remoteBaseDir, remotePath));
+      return list;
+    } else {
+      let files = await fs.readdir(path.join(localBaseDir, localPath));
+      let list = [];
+      for (let file of files) {
+        let fileStat = await fs.lstat(path.join(localBaseDir, localPath, file));
+        list.push({
+          name: file,
+          type: fileStat.isDirectory() ? 'd' : '-'
+        });
+      }
+      return list;
+    }
+  } catch (err) {
+    // todo: send err to ui
+    console.error(err);
+    return [];
+  }
+});
+
+ipcMain.handle('cd', async (evt, ...args): Promise<boolean> => {
+  let remote: boolean = args[0] || false;
+  let relativePath: string = args[1] || '.';
+
+  if (remote) {
+    remotePath = path.join(remotePath, relativePath);
+  } else {
+    localPath = path.join(localPath, relativePath);
+  }
+
+  // todo: make sure path exists and can cd first
+
+  return true;
 });
