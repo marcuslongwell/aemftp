@@ -234,6 +234,42 @@ ipcMain.handle('get', async (evt, ...args): Promise<boolean> => {
     
     return true;
   } catch (err) {
+    // todo: send to gui
+    console.error(err);
+    return false;
+  }
+});
+
+ipcMain.handle('rm', async (evt, ...args): Promise<boolean> => {
+  let remote: boolean = args[0] || false;
+  let relativePath: string = args[1] || '.';
+
+  // todo: make sure it exists first
+
+  try {
+    if (remote) {
+      let list = await ftpClient.list(path.join(remoteBaseDir, remotePath));
+      let isDir = false;
+      for (let file of list) {
+        if (file.name == relativePath && file.type == 'd') {
+          isDir = true;
+          break;
+        }
+      }
+
+      let targetPath = path.join(remoteBaseDir, remotePath, relativePath);
+      if (isDir) {
+        await ftpClient.rmdir(targetPath, true);
+      } else {
+        await ftpClient.delete(targetPath);
+      }
+    } else {
+      await fs.remove(path.join(localBaseDir, localPath, relativePath));
+    }
+
+    return true;
+  } catch (err) {
+    // todo: send to gui
     console.error(err);
     return false;
   }

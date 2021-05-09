@@ -147,4 +147,16 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  async rm(remote: boolean, fileName: string): Promise<void> {
+    if (remote && !this.isConnected) throw new Error('Cannot remove remote file if not connected');
+
+    try {
+      await this.electronService.ipcRenderer.invoke('rm', remote, fileName);
+      await this.listFiles(remote);
+    } catch (err) {
+      // todo: handle in ui
+      console.error(err);
+    }
+  }
+
 }
