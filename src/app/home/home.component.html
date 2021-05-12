@@ -25,6 +25,9 @@
           <input matInput type="password" [(ngModel)]="pass" />
         </mat-form-field>
       </div>
+      <div class="col px-2 xs-auto">
+        <mat-checkbox [checked]="isSecure">Use SFTP</mat-checkbox>
+      </div>
       <div class="col xs-auto px-2">
         <button mat-raised-button (click)="connect()">Connect</button>
       </div>

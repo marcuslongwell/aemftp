@@ -9,10 +9,11 @@ import { ElectronService } from '../core/services';
 })
 export class HomeComponent implements OnInit {
   private electronService: ElectronService = new ElectronService();
-  private host: string = 'mlongwe1.mkrn.dev';
+  private host: string = 'localhost';
   private port: string = '21';
-  private user: string = 'mlongwe1';
+  private user: string = 'marcus';
   private pass: string = '';
+  private isSecure: boolean = true;
   private isConnected: boolean = false;
 
   private remoteFiles: Array<any>;
@@ -110,7 +111,7 @@ export class HomeComponent implements OnInit {
     console.log('Connecting...');
     console.log(this.host + ':' + this.port + ', ' + this.user + ', ' + this.pass);
     try {
-      this.isConnected = await this.electronService.ipcRenderer.invoke('connect', this.host, this.port, this.user, this.pass);
+      this.isConnected = await this.electronService.ipcRenderer.invoke('connect', this.host, this.port, this.user, this.pass, this.isSecure);
       
       if (this.isConnected) {
         await this.listFiles(true);
