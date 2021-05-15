@@ -108,9 +108,9 @@ ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
   let port: string = args[1];
   let user: string = args[2];
   let pass: string = args[3];
-  let secure: boolean = args[4] || false;
+  let protocol: string = args[4];
 
-  console.log(host, port, user, pass, secure);
+  console.log(host, port, user, pass, protocol);
   
   try {
     await ftpClient.destroy();
@@ -121,7 +121,7 @@ ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
       port: port,
       user: user,
       password: pass,
-      secure: secure,
+      secure: protocol == 'ftps' || protocol == 'sftp',
       secureOptions: {
         rejectUnauthorized: false
       }
