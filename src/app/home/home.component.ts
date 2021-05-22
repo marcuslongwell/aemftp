@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ElectronService } from '../core/services';
+import { File } from '../file';
+import { FileService } from '../file.service';
 
 @Component({
   selector: 'app-home',
@@ -23,7 +25,7 @@ export class HomeComponent implements OnInit {
   private remoteCrumbs: Array<any>;
   private localCrumbs: Array<any>;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private fileService: FileService) { }
 
   async ngOnInit(): Promise<void> {
     let res = await this.electronService.ipcRenderer.invoke('ping');
