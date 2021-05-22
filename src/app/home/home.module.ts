@@ -6,6 +6,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
 
 import { HomeRoutingModule } from './home-routing.module';
 
@@ -15,6 +17,7 @@ import { SharedModule } from '../shared/shared.module';
 @NgModule({
   declarations: [HomeComponent],
   imports: [CommonModule, SharedModule, HomeRoutingModule, BrowserAnimationsModule,
-    MatButtonModule, MatInputModule, MatFormFieldModule, MatIconModule, MatMenuModule]
+    MatButtonModule, MatInputModule, MatFormFieldModule, MatIconModule, MatMenuModule,
+    MatSelectModule]
 })
 export class HomeModule {}

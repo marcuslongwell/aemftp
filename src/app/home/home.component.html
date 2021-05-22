@@ -25,6 +25,15 @@
           <input matInput type="password" [(ngModel)]="pass" />
         </mat-form-field>
       </div>
+      <div class="col px-2 xs-auto">
+        <mat-form-field>
+          <mat-select [(value)]="protocol">
+            <mat-option value="ftp">FTP</mat-option>
+            <mat-option value="ftps">FTPS</mat-option>
+            <mat-option value="sftp">SFTP</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
       <div class="col xs-auto px-2">
         <button mat-raised-button (click)="connect()">Connect</button>
       </div>

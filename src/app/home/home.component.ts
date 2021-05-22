@@ -9,10 +9,11 @@ import { ElectronService } from '../core/services';
 })
 export class HomeComponent implements OnInit {
   private electronService: ElectronService = new ElectronService();
-  private host: string = 'mlongwe1.mkrn.dev';
+  private host: string = 'demo.wftpserver.com';
   private port: string = '21';
-  private user: string = 'mlongwe1';
-  private pass: string = '';
+  private user: string = 'demo';
+  private pass: string = 'demo';
+  private protocol: string = 'ftp';
   private isConnected: boolean = false;
 
   private remoteFiles: Array<any>;
@@ -108,9 +109,9 @@ export class HomeComponent implements OnInit {
 
   async connect(): Promise<void> {
     console.log('Connecting...');
-    console.log(this.host + ':' + this.port + ', ' + this.user + ', ' + this.pass);
+    console.log(this.host + ':' + this.port + ', ' + this.user + ', ' + this.pass + ', ' + this.protocol);
     try {
-      this.isConnected = await this.electronService.ipcRenderer.invoke('connect', this.host, this.port, this.user, this.pass);
+      this.isConnected = await this.electronService.ipcRenderer.invoke('connect', this.host, this.port, this.user, this.pass, this.protocol);
       
       if (this.isConnected) {
         await this.listFiles(true);

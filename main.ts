@@ -108,8 +108,9 @@ ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
   let port: string = args[1];
   let user: string = args[2];
   let pass: string = args[3];
+  let protocol: string = args[4];
 
-  console.log(host, port, user, pass);
+  console.log(host, port, user, pass, protocol);
   
   try {
     await ftpClient.destroy();
@@ -119,7 +120,11 @@ ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
       host: host,
       port: port,
       user: user,
-      password: pass
+      password: pass,
+      secure: protocol == 'ftps' || protocol == 'sftp',
+      secureOptions: {
+        rejectUnauthorized: false
+      }
     });
 
     remoteBaseDir = await ftpClient.pwd();
