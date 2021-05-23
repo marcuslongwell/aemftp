@@ -58,14 +58,11 @@ export class HomeComponent implements OnInit {
 
   async listFiles(file: File) {
     if (!this.isConnected && file.isRemote) throw new Error('Not connected to FTP server');
+    if (!file.isDirectory) throw new Error('Cannot list files of non-directory');
 
-    console.log('listing remote files in: ', file, 'path is', file.path);
-
-    // let files: Array<any>;
     let files: File[] = [];
     try {
       files = (await this.electronService.ipcRenderer.invoke('ls', file)).map(item => File.fromObject(item));
-      console.log(files);
 
       files.sort((a, b): number => {
         // return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
@@ -80,20 +77,16 @@ export class HomeComponent implements OnInit {
       // files.unshift(new File(file.path + '/..', true, file.isRemote));
 
       // todo: test on windows client & windows ftp server (check slash)
-      let crumbs: Array<any> = [];
-      console.log('pwd: ' + file.path);
-      let splitPath: Array<string> = file.path.split('/');
-
-      if (splitPath[0] == splitPath[1]) {
-        // top level directory, path was just a single slash
-        splitPath = splitPath.splice(0, 1);
+      let crumbs: Array<File> = [];
+      let iteratedFile = file;
+      while (iteratedFile.directory.includes('/')) {
+        iteratedFile = new File(iteratedFile.directory, true, file.isRemote);
+        crumbs.unshift(iteratedFile);
       }
 
-      for (let dir of splitPath) {
-        crumbs.push({
-          name: dir
-        });
-      }
+      crumbs.unshift(new File('/', true, file.isRemote));
+      if (file.fileName.length > 0) crumbs.push(file);
+
 
       if (file.isRemote) {
         this.remotePWD = file;
