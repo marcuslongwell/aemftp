@@ -54,26 +54,26 @@
           </div>
 
           <ul class="listings">
-            <li class="listing px-3 py-2" *ngFor="let file of localFiles" (dblclick)="open(false, file)">
-              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder_open</mat-icon>
-              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.type != 'd'">description</mat-icon>
-              <span class="px-1 file-name">{{file.name}}</span>
+            <li class="listing px-3 py-2" *ngFor="let file of localFiles" (dblclick)="open(file)">
+              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.isDirectory">folder_open</mat-icon>
+              <mat-icon aria-hidden="false" aria-label="File" *ngIf="!file.isDirectory">description</mat-icon>
+              <span class="px-1 file-name">{{file.fileName}}</span>
 
-              <span *ngIf="file.name != '..'">
+              <span *ngIf="file.fileName != '..'">
                 <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="File operations menu" (click)="$event.stopPropagation()">
                   <mat-icon>more_vert</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
-                  <button mat-menu-item (click)="open(false, file)">
-                    <mat-icon *ngIf="file.type == 'd'">folder open</mat-icon>
-                    <mat-icon *ngIf="file.type != 'd'">launch</mat-icon>
+                  <button mat-menu-item (click)="open(file)">
+                    <mat-icon *ngIf="file.isDirectory">folder open</mat-icon>
+                    <mat-icon *ngIf="!file.isDirectory">launch</mat-icon>
                     <span>Open</span>
                   </button>
-                  <button mat-menu-item (click)="put(file.name)">
+                  <button mat-menu-item (click)="put(file)">
                     <mat-icon>upload</mat-icon>
                     <span>Upload</span>
                   </button>
-                  <button mat-menu-item (click)="rm(false, file.name)">
+                  <button mat-menu-item (click)="rm(file)">
                     <mat-icon>delete</mat-icon>
                     <span>Delete</span>
                   </button>
@@ -93,26 +93,26 @@
           </div>
 
           <ul class="listings">
-            <li class="listing px-3 py-2" *ngFor="let file of remoteFiles" (dblclick)="open(true, file)">
-              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.type == 'd'">folder_open</mat-icon>
-              <mat-icon aria-hidden="false" aria-label="File" *ngIf="file.type != 'd'">description</mat-icon>
-              <span class="px-1 file-name">{{file.name}}</span>
+            <li class="listing px-3 py-2" *ngFor="let file of remoteFiles" (dblclick)="open(file)">
+              <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.isDirectory">folder_open</mat-icon>
+              <mat-icon aria-hidden="false" aria-label="File" *ngIf="!file.isDirectory">description</mat-icon>
+              <span class="px-1 file-name">{{file.fileName}}</span>
 
-              <span *ngIf="file.name != '..'">
+              <span *ngIf="file.fileName != '..'">
                 <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="File operations menu" (click)="$event.stopPropagation()">
                   <mat-icon>more_vert</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
-                  <button mat-menu-item (click)="open(true, file)">
-                    <mat-icon *ngIf="file.type == 'd'">folder open</mat-icon>
-                    <mat-icon *ngIf="file.type != 'd'">launch</mat-icon>
+                  <button mat-menu-item (click)="open(file)">
+                    <mat-icon *ngIf="file.isDirectory">folder open</mat-icon>
+                    <mat-icon *ngIf="!file.isDirectory">launch</mat-icon>
                     <span>Open</span>
                   </button>
-                  <button mat-menu-item (click)="get(file.name)">
+                  <button mat-menu-item (click)="get(file)">
                     <mat-icon>download</mat-icon>
                     <span>Download</span>
                   </button>
-                  <button mat-menu-item (click)="rm(true, file.name)">
+                  <button mat-menu-item (click)="rm(file)">
                     <mat-icon>delete</mat-icon>
                     <span>Delete</span>
                   </button>

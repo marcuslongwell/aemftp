@@ -76,4 +76,11 @@ export class File {
     parts = parts.slice(0, parts.length - 1);
     return parts.join(this.path.includes('\\') ? '\\' : '/');
   }
+
+  static fromObject(obj: any): File {
+    let path: string = obj?.path || obj?._path || '/';
+    let isDirectory: boolean = obj?.isDirectory || obj?._isDirectory || false;
+    let isRemote: boolean = obj?.isRemote || obj?._isRemote || false;
+    return new File(path, isDirectory, isRemote);
+  }
 }

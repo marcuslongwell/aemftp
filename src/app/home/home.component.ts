@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ElectronService } from '../core/services';
 import { File } from '../file';
-import { FileService } from '../file.service';
 
 @Component({
   selector: 'app-home',
@@ -18,30 +17,36 @@ export class HomeComponent implements OnInit {
   private protocol: string = 'ftp';
   private isConnected: boolean = false;
 
-  private remoteFiles: Array<any>;
-  private localFiles: Array<any>;
-  private remotePWD: string;
-  private localPWD: string;
+  private remoteFiles: File[];
+  private localFiles: File[];
+
+  // private remoteFiles: Array<any>;
+  // private localFiles: Array<any>;
+  private remotePWD: File;
+  private localPWD: File;
+  // private remotePWD: string;
+  // private localPWD: string;
   private remoteCrumbs: Array<any>;
   private localCrumbs: Array<any>;
 
-  constructor(private router: Router, private fileService: FileService) { }
+  constructor(private router: Router) { }
 
   async ngOnInit(): Promise<void> {
     let res = await this.electronService.ipcRenderer.invoke('ping');
-    await this.listFiles(false);
+    this.localPWD = File.fromObject(await this.electronService.ipcRenderer.invoke('homedir', false));
+    await this.listFiles(this.localPWD);
   }
 
-  async open(remote: boolean, file: any): Promise<void> {
-    if (!this.isConnected && remote) throw new Error('Not connected to FTP server');
+  async open(file: File): Promise<void> {
+    if (!this.isConnected && file.isRemote) throw new Error('Not connected to FTP server');
 
     try {
-      if (file.type == 'd') {
-        await this.electronService.ipcRenderer.invoke('cd', remote, file.name);
-        await this.listFiles(remote);
-      } else if (!remote) {
+      if (file.isDirectory) {
+        await this.listFiles(file);
+      } else if (!file.isRemote) {
         // if local, open file in os
-        await this.electronService.ipcRenderer.invoke('open', file.name);
+        console.log('trying to open the file locally');
+        await this.electronService.ipcRenderer.invoke('open', file);
       }
       
       return;
@@ -51,37 +56,33 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  async listFiles(remote: boolean) {
-    if (!this.isConnected && remote) throw new Error('Not connected to FTP server');
+  async listFiles(file: File) {
+    if (!this.isConnected && file.isRemote) throw new Error('Not connected to FTP server');
 
-    let files: Array<any>;
-    let pwd: string;
+    console.log('listing remote files in: ', file, 'path is', file.path);
+
+    // let files: Array<any>;
+    let files: File[] = [];
     try {
-      if (remote) {
-        pwd = await this.electronService.ipcRenderer.invoke('pwd', true);
-        files = await this.electronService.ipcRenderer.invoke('ls', true);
-      } else {
-        pwd = await this.electronService.ipcRenderer.invoke('pwd', false);
-        files = await this.electronService.ipcRenderer.invoke('ls', false);
-      }
+      files = (await this.electronService.ipcRenderer.invoke('ls', file)).map(item => File.fromObject(item));
+      console.log(files);
 
       files.sort((a, b): number => {
-        return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+        // return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1;
+        return a.fileName.toLowerCase() < b.fileName.toLowerCase() ? -1 : 1;
       });
 
       files.sort((a, b): number => {
-        return (a.type == 'd' && b.type != 'd') ? -1 : 0;
+        // return (a.type == 'd' && b.type != 'd') ? -1 : 0;
+        return (a.isDirectory && !b.isDirectory) ? -1 : 0;
       });
 
-      files.unshift({
-        name: '..',
-        type: 'd'
-      });
+      // files.unshift(new File(file.path + '/..', true, file.isRemote));
 
-      // todo: test on windows client & windows ftp server
+      // todo: test on windows client & windows ftp server (check slash)
       let crumbs: Array<any> = [];
-      console.log('pwd: ' + pwd);
-      let splitPath: Array<string> = pwd.split('/');
+      console.log('pwd: ' + file.path);
+      let splitPath: Array<string> = file.path.split('/');
 
       if (splitPath[0] == splitPath[1]) {
         // top level directory, path was just a single slash
@@ -94,12 +95,12 @@ export class HomeComponent implements OnInit {
         });
       }
 
-      if (remote) {
-        this.remotePWD = pwd;
+      if (file.isRemote) {
+        this.remotePWD = file;
         this.remoteCrumbs = crumbs;
         this.remoteFiles = files;
       } else {
-        this.localPWD = pwd;
+        this.localPWD = file;
         this.localCrumbs = crumbs;
         this.localFiles = files;
       }
@@ -116,7 +117,8 @@ export class HomeComponent implements OnInit {
       this.isConnected = await this.electronService.ipcRenderer.invoke('connect', this.host, this.port, this.user, this.pass, this.protocol);
       
       if (this.isConnected) {
-        await this.listFiles(true);
+        this.remotePWD = File.fromObject(await this.electronService.ipcRenderer.invoke('homedir', true));
+        await this.listFiles(this.remotePWD);
       } else {
         throw new Error('Unable to connect for unknown reason');
       }
@@ -126,36 +128,36 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  async put(fileName: string): Promise<void> {
+  async put(file: File): Promise<void> {
     if (!this.isConnected) throw new Error('Cannot put file if not connected');
 
     try {
-      await this.electronService.ipcRenderer.invoke('put', fileName);
-      await this.listFiles(true);
+      await this.electronService.ipcRenderer.invoke('put', file, this.remotePWD);
+      await this.listFiles(this.remotePWD);
     } catch (err) {
       // todo: handle in ui
       console.error(err);
     }
   }
 
-  async get(fileName: string): Promise<void> {
+  async get(file: File): Promise<void> {
     if (!this.isConnected) throw new Error('Cannot get file if not connected');
 
     try {
-      await this.electronService.ipcRenderer.invoke('get', fileName);
-      await this.listFiles(false);
+      await this.electronService.ipcRenderer.invoke('get', file, this.localPWD);
+      await this.listFiles(this.localPWD);
     } catch (err) {
       // todo: handle in ui
       console.error(err);
     }
   }
 
-  async rm(remote: boolean, fileName: string): Promise<void> {
-    if (remote && !this.isConnected) throw new Error('Cannot remove remote file if not connected');
+  async rm(file: File): Promise<void> {
+    if (file.isRemote && !this.isConnected) throw new Error('Cannot remove remote file if not connected');
 
     try {
-      await this.electronService.ipcRenderer.invoke('rm', remote, fileName);
-      await this.listFiles(remote);
+      await this.electronService.ipcRenderer.invoke('rm', file);
+      await this.listFiles(file.isRemote ? this.remotePWD : this.localPWD);
     } catch (err) {
       // todo: handle in ui
       console.error(err);

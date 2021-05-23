@@ -5,6 +5,7 @@ import * as os from 'os';
 import { ipcMain } from 'electron';
 import { resolve } from 'node:path';
 import * as fs from 'fs-extra';
+import { File } from './src/app/file';
 
 // import FTPClient from 'ftp';
 const FTPClient = require('promise-ftp');
@@ -98,10 +99,11 @@ ipcMain.handle('ping', (): string => {
 });
 
 let ftpClient = new FTPClient();
-let remoteBaseDir = '/';
-let localBaseDir = os.homedir();
-let remotePath = './';
-let localPath = './';
+
+ipcMain.handle('homedir', async (evt, ...args): Promise<File> => {
+  let remote: boolean = args[0] || false;
+  return new File(remote ? (await ftpClient.pwd()) : os.homedir(), true, remote);
+});
 
 ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
   let host: string = args[0];
@@ -127,8 +129,6 @@ ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
       }
     });
 
-    remoteBaseDir = await ftpClient.pwd();
-
     return true;
   } catch (err) {
     // todo: send err to ui
@@ -137,38 +137,28 @@ ipcMain.handle('connect', async (evt, ...args): Promise<boolean> => {
   }
 });
 
-ipcMain.handle('pwd', async (evt, ...args): Promise<string> => {
-  let remote: boolean = args[0] || false;
+ipcMain.handle('ls', async (evt, ...args): Promise<Array<File>> => {
+  // let remote: boolean = args[0] || false;
+  let file: File = File.fromObject(args[0]);
 
-  try {
-    if (remote) return path.join(remoteBaseDir, remotePath);
-    else return path.join(localBaseDir, localPath);
-  } catch (err) {
-    // todo: send err to ui
-    console.error(err);
-    return '';
-  }
-});
-
-ipcMain.handle('ls', async (evt, ...args): Promise<Array<any>> => {
-  let remote: boolean = args[0] || false;
+  if (!file.isDirectory) throw new Error('Cannot list files in non-directory');
 
   try {
     // todo: unify the return listing into a standardized object for remote & local
-    if (remote) {
-      let list = await ftpClient.list(path.join(remoteBaseDir, remotePath));
-      return list;
+    if (file.isRemote) {
+      let list = await ftpClient.list(file.path);
+      let files: File[] = list.map((item) => {
+        return new File(path.join(file.path, item.name), item.type == 'd', true);
+      });
+      return files;
     } else {
-      let files = await fs.readdir(path.join(localBaseDir, localPath));
-      let list = [];
-      for (let file of files) {
-        let fileStat = await fs.lstat(path.join(localBaseDir, localPath, file));
-        list.push({
-          name: file,
-          type: fileStat.isDirectory() ? 'd' : '-'
-        });
+      let list = await fs.readdir(file.path);
+      let files: File[] = [];
+      for (let item of list) {
+        let fileStat = await fs.lstat(path.join(file.path, item));
+        files.push(new File(path.join(file.path, item), fileStat.isDirectory(), false));
       }
-      return list;
+      return files;
     }
   } catch (err) {
     // todo: send err to ui
@@ -177,30 +167,13 @@ ipcMain.handle('ls', async (evt, ...args): Promise<Array<any>> => {
   }
 });
 
-ipcMain.handle('cd', async (evt, ...args): Promise<boolean> => {
-  let remote: boolean = args[0] || false;
-  let relativePath: string = args[1] || '.';
-
-  if (remote) {
-    remotePath = path.join(remotePath, relativePath);
-  } else {
-    localPath = path.join(localPath, relativePath);
-  }
-
-  // todo: make sure path exists and can cd first
-
-  return true;
-});
-
 ipcMain.handle('open', async (evt, ...args): Promise<boolean> => {
-  let relativePath: string = args[0] || '';
+  let file: File = File.fromObject(args[0]);
 
-  if (relativePath.length < 1) throw new Error('Must specify a file name');
-
-  let fullPath: string = path.join(localBaseDir, localPath, relativePath);
+  if (file.isRemote) throw new Error('Cannot open remote file');
 
   try {
-    let err = await shell.openPath(fullPath);
+    let err = await shell.openPath(path.resolve(file.path));
     if (err.length > 0) throw new Error(err);
     return true;
   } catch (err) {
@@ -211,12 +184,17 @@ ipcMain.handle('open', async (evt, ...args): Promise<boolean> => {
 });
 
 ipcMain.handle('put', async (evt, ...args): Promise<boolean> => {
-  let fileName: string = args[0];
+  let file: File = File.fromObject(args[0]);
+  let remoteDir: File = File.fromObject(args[1]);
+
+  if (file.isRemote) throw new Error('Cannot put remote file');
+  if (!remoteDir.isDirectory) throw new Error('Remote path is not a directory');
+  if (!remoteDir.isRemote) throw new Error('Must supply remote directory');
 
   // todo: check that file exists locally first maybe?
   // todo: check if file exists on remote, prompt user for choice if it does
   try {
-    await ftpClient.put(path.join(localBaseDir, localPath, fileName), path.join(remoteBaseDir, remotePath, fileName));
+    await ftpClient.put(path.resolve(file.path), path.join(remoteDir.path, file.fileName));
     return true;
   } catch (err) {
     console.error(err);
@@ -225,16 +203,21 @@ ipcMain.handle('put', async (evt, ...args): Promise<boolean> => {
 });
 
 ipcMain.handle('get', async (evt, ...args): Promise<boolean> => {
-  let fileName: string = args[0];
+  let file: File = File.fromObject(args[0]);
+  let localDir: File = File.fromObject(args[1]);
+
+  if (!file.isRemote) throw new Error('Cannot get local file');
+  if (!localDir.isDirectory) throw new Error('Local path is not a directory');
+  if (localDir.isRemote) throw new Error('Must supply local directory');
 
   // todo: check that file exists on remote first maybe?
   // todo: check if file exists on local, prompt user for choice if it does
   try {
-    let fileStream = await ftpClient.get(path.join(remoteBaseDir, remotePath, fileName));
+    let fileStream = await ftpClient.get(file.path);
     await new Promise((resolve, reject): void => {
       fileStream.once('close', resolve);
       fileStream.once('error', reject);
-      fileStream.pipe(fs.createWriteStream(path.join(localBaseDir, localPath, fileName)));
+      fileStream.pipe(fs.createWriteStream(path.join(localDir.path, file.fileName)));
     });
     
     return true;
@@ -246,30 +229,22 @@ ipcMain.handle('get', async (evt, ...args): Promise<boolean> => {
 });
 
 ipcMain.handle('rm', async (evt, ...args): Promise<boolean> => {
-  let remote: boolean = args[0] || false;
-  let relativePath: string = args[1] || '.';
+  // let remote: boolean = args[0] || false;
+  // let relativePath: string = args[1] || '.';
+  let file: File = File.fromObject(args[0]);
 
   // todo: make sure it exists first
+  // todo: recursive delete?
 
   try {
-    if (remote) {
-      let list = await ftpClient.list(path.join(remoteBaseDir, remotePath));
-      let isDir = false;
-      for (let file of list) {
-        if (file.name == relativePath && file.type == 'd') {
-          isDir = true;
-          break;
-        }
-      }
-
-      let targetPath = path.join(remoteBaseDir, remotePath, relativePath);
-      if (isDir) {
-        await ftpClient.rmdir(targetPath, true);
+    if (file.isRemote) {
+      if (file.isDirectory) {
+        await ftpClient.rmdir(file.path, true);
       } else {
-        await ftpClient.delete(targetPath);
+        await ftpClient.delete(file.path);
       }
     } else {
-      await fs.remove(path.join(localBaseDir, localPath, relativePath));
+      await fs.remove(path.resolve(file.path));
     }
 
     return true;
