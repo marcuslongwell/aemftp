@@ -69,6 +69,10 @@
                     <mat-icon *ngIf="!file.isDirectory">launch</mat-icon>
                     <span>Open</span>
                   </button>
+                  <button mat-menu-item (click)="reveal(file)">
+                    <mat-icon>search</mat-icon>
+                    <span>Reveal in Files</span>
+                  </button>
                   <button mat-menu-item (click)="put(file)">
                     <mat-icon>upload</mat-icon>
                     <span>Upload</span>

@@ -94,6 +94,9 @@ try {
   // throw e;
 }
 
+// todo: make sure all files send over ipc are valid files
+  // maybe need some sort of validation in the file class, though I don't like this
+
 ipcMain.handle('ping', (): string => {
   return 'pong';
 });
@@ -250,6 +253,21 @@ ipcMain.handle('rm', async (evt, ...args): Promise<boolean> => {
     return true;
   } catch (err) {
     // todo: send to gui
+    console.error(err);
+    return false;
+  }
+});
+
+ipcMain.handle('reveal', async (evt, ...args): Promise<boolean> => {
+  let file: File = File.fromObject(args[0]);
+
+  if (file.isRemote) throw new Error('Cannot reveal remote file in local filesystem');
+
+  try {
+    shell.showItemInFolder(path.resolve(file.path));
+    return true;
+  } catch (err) {
+    // todo: send error back to client
     console.error(err);
     return false;
   }

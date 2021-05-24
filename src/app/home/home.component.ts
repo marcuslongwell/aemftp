@@ -38,25 +38,6 @@ export class HomeComponent implements OnInit {
     await this.listFiles(this.localPWD);
   }
 
-  async open(file: File): Promise<void> {
-    if (!this.isConnected && file.isRemote) throw new Error('Not connected to FTP server');
-
-    try {
-      if (file.isDirectory) {
-        await this.listFiles(file);
-      } else if (!file.isRemote) {
-        // if local, open file in os
-        console.log('trying to open the file locally');
-        await this.electronService.ipcRenderer.invoke('open', file);
-      }
-      
-      return;
-    } catch (err) {
-      // todo: handle in ui
-      console.error(err);
-    }
-  }
-
   async listFiles(file: File) {
     if (!this.isConnected && file.isRemote) throw new Error('Not connected to FTP server');
     if (!file.isDirectory) throw new Error('Cannot list files of non-directory');
@@ -151,6 +132,38 @@ export class HomeComponent implements OnInit {
     try {
       await this.electronService.ipcRenderer.invoke('rm', file);
       await this.listFiles(file.isRemote ? this.remotePWD : this.localPWD);
+    } catch (err) {
+      // todo: handle in ui
+      console.error(err);
+    }
+  }
+
+  async open(file: File): Promise<void> {
+    if (!this.isConnected && file.isRemote) throw new Error('Not connected to FTP server');
+
+    try {
+      if (file.isDirectory) {
+        await this.listFiles(file);
+      } else if (!file.isRemote) {
+        // if local, open file in os
+        console.log('trying to open the file locally');
+        await this.electronService.ipcRenderer.invoke('open', file);
+      } else {
+        throw new Error('Cannot open remove file; file must be downloaded first');
+      }
+      
+      return;
+    } catch (err) {
+      // todo: handle in ui
+      console.error(err);
+    }
+  }
+
+  async reveal(file: File): Promise<void> {
+    if (file.isRemote) throw new Error('Cannot reveal remote file');
+
+    try {
+      await this.electronService.ipcRenderer.invoke('reveal', file);
     } catch (err) {
       // todo: handle in ui
       console.error(err);
