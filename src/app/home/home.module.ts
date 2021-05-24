@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
+import { DndModule } from 'ngx-drag-drop';
 
 import { HomeRoutingModule } from './home-routing.module';
 
@@ -18,6 +19,6 @@ import { SharedModule } from '../shared/shared.module';
   declarations: [HomeComponent],
   imports: [CommonModule, SharedModule, HomeRoutingModule, BrowserAnimationsModule,
     MatButtonModule, MatInputModule, MatFormFieldModule, MatIconModule, MatMenuModule,
-    MatSelectModule]
+    MatSelectModule, DndModule]
 })
 export class HomeModule {}

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ElectronService } from '../core/services';
 import { File } from '../file';
+import { DndDropEvent } from 'ngx-drag-drop';
 
 @Component({
   selector: 'app-home',
@@ -87,7 +88,6 @@ export class HomeComponent implements OnInit {
       crumbs.unshift(new File('/', true, file.isRemote));
       if (file.fileName.length > 0) crumbs.push(file);
 
-
       if (file.isRemote) {
         this.remotePWD = file;
         this.remoteCrumbs = crumbs;
@@ -154,6 +154,23 @@ export class HomeComponent implements OnInit {
     } catch (err) {
       // todo: handle in ui
       console.error(err);
+    }
+  }
+
+  async onFileDrop(event: DndDropEvent, toRemote: boolean): Promise<void> {
+    if (!event.data) throw new Error('Drop event data must contain a file');
+
+    let file: File = File.fromObject(event.data);
+    if (file.path.length < 1) throw new Error('Unable to find specified file');
+
+    if (file.isRemote && !toRemote) {
+      // we're getting the file from remote
+      return this.get(file);
+    } else if (!file.isRemote && toRemote) {
+      // we're putting the file from local
+      return this.put(file);
+    } else {
+      throw new Error('Cannot copy a local or remote file to same location');
     }
   }
 

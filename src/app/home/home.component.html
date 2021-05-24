@@ -53,8 +53,8 @@
             </span>
           </div>
 
-          <ul class="listings">
-            <li class="listing px-3 py-2" *ngFor="let file of localFiles" (dblclick)="open(file)">
+          <ul class="listings" dndDropzone (dndDrop)="onFileDrop($event, false)">
+            <li class="listing px-3 py-2" *ngFor="let file of localFiles" (dblclick)="open(file)" [dndDraggable]="file">
               <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.isDirectory">folder_open</mat-icon>
               <mat-icon aria-hidden="false" aria-label="File" *ngIf="!file.isDirectory">description</mat-icon>
               <span class="px-1 file-name">{{file.fileName}}</span>
@@ -92,8 +92,8 @@
             </span>
           </div>
 
-          <ul class="listings">
-            <li class="listing px-3 py-2" *ngFor="let file of remoteFiles" (dblclick)="open(file)">
+          <ul class="listings" dndDropzone (dndDrop)="onFileDrop($event, true)">
+            <li class="listing px-3 py-2" *ngFor="let file of remoteFiles" (dblclick)="open(file)" [dndDraggable]="file">
               <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.isDirectory">folder_open</mat-icon>
               <mat-icon aria-hidden="false" aria-label="File" *ngIf="!file.isDirectory">description</mat-icon>
               <span class="px-1 file-name">{{file.fileName}}</span>
