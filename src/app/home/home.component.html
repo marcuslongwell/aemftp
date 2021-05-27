@@ -73,7 +73,7 @@
                     <mat-icon>search</mat-icon>
                     <span>Reveal in Files</span>
                   </button>
-                  <button mat-menu-item (click)="put(file)">
+                  <button mat-menu-item *ngIf="!file.isDirectory" (click)="put(file)">
                     <mat-icon>upload</mat-icon>
                     <span>Upload</span>
                   </button>
@@ -112,7 +112,7 @@
                     <mat-icon *ngIf="!file.isDirectory">launch</mat-icon>
                     <span>Open</span>
                   </button>
-                  <button mat-menu-item (click)="get(file)">
+                  <button mat-menu-item *ngIf="!file.isDirectory" (click)="get(file)">
                     <mat-icon>download</mat-icon>
                     <span>Download</span>
                   </button>
