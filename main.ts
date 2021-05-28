@@ -97,6 +97,20 @@ try {
 // todo: make sure all files send over ipc are valid files
   // maybe need some sort of validation in the file class, though I don't like this
 
+function sanitizePath(somePath = '/') {
+  // convert \\ to /
+  let sanitizedPath = somePath.split(path.win32.sep).join(path.posix.sep);
+
+  // normalize the path
+  sanitizedPath = path.normalize(sanitizedPath);
+
+  // strip any trailing slashes
+  while (sanitizedPath.endsWith('/')) {
+    sanitizedPath = sanitizedPath.substring(0, sanitizedPath.length - 1);
+  }
+  return sanitizedPath;
+}
+
 ipcMain.handle('ping', (): string => {
   return 'pong';
 });
@@ -151,7 +165,7 @@ ipcMain.handle('ls', async (evt, ...args): Promise<Array<File>> => {
     if (file.isRemote) {
       let list = await ftpClient.list(file.path);
       let files: File[] = list.map((item) => {
-        return new File(path.join(file.path, item.name), item.type == 'd', true);
+        return new File(sanitizePath(path.join(file.path, item.name)), item.type == 'd', true);
       });
       return files;
     } else {
@@ -159,7 +173,7 @@ ipcMain.handle('ls', async (evt, ...args): Promise<Array<File>> => {
       let files: File[] = [];
       for (let item of list) {
         let fileStat = await fs.lstat(path.join(file.path, item));
-        files.push(new File(path.join(file.path, item), fileStat.isDirectory(), false));
+        files.push(new File(sanitizePath(path.join(file.path, item)), fileStat.isDirectory(), false));
       }
       return files;
     }
@@ -176,8 +190,28 @@ ipcMain.handle('open', async (evt, ...args): Promise<boolean> => {
   if (file.isRemote) throw new Error('Cannot open remote file');
 
   try {
-    let err = await shell.openPath(path.resolve(file.path));
+    let err = await shell.openPath(sanitizePath(file.path));
     if (err.length > 0) throw new Error(err);
+    return true;
+  } catch (err) {
+    // todo: send error back to client
+    console.error(err);
+    return false;
+  }
+});
+
+ipcMain.handle('mkdir', async (evt, ...args): Promise<boolean> => {
+  let file: File = File.fromObject(args[0]);
+
+  // todo: check if able to first?
+
+  try {
+    if (file.isRemote) {
+      await ftpClient.mkdir(sanitizePath(file.path), false);
+    } else {
+      await fs.mkdir(sanitizePath(file.path));
+    }
+    
     return true;
   } catch (err) {
     // todo: send error back to client
@@ -197,7 +231,7 @@ ipcMain.handle('put', async (evt, ...args): Promise<boolean> => {
   // todo: check that file exists locally first maybe?
   // todo: check if file exists on remote, prompt user for choice if it does
   try {
-    await ftpClient.put(path.resolve(file.path), path.join(remoteDir.path, file.fileName));
+    await ftpClient.put(sanitizePath(file.path), sanitizePath(path.join(remoteDir.path, file.fileName)));
     return true;
   } catch (err) {
     console.error(err);
@@ -220,7 +254,7 @@ ipcMain.handle('get', async (evt, ...args): Promise<boolean> => {
     await new Promise((resolve, reject): void => {
       fileStream.once('close', resolve);
       fileStream.once('error', reject);
-      fileStream.pipe(fs.createWriteStream(path.join(localDir.path, file.fileName)));
+      fileStream.pipe(fs.createWriteStream(sanitizePath(path.join(localDir.path, file.fileName))));
     });
     
     return true;
@@ -242,12 +276,12 @@ ipcMain.handle('rm', async (evt, ...args): Promise<boolean> => {
   try {
     if (file.isRemote) {
       if (file.isDirectory) {
-        await ftpClient.rmdir(file.path, true);
+        await ftpClient.rmdir(sanitizePath(file.path), true);
       } else {
-        await ftpClient.delete(file.path);
+        await ftpClient.delete(sanitizePath(file.path));
       }
     } else {
-      await fs.remove(path.resolve(file.path));
+      await fs.remove(path.resolve(sanitizePath(file.path)));
     }
 
     return true;
@@ -264,7 +298,7 @@ ipcMain.handle('reveal', async (evt, ...args): Promise<boolean> => {
   if (file.isRemote) throw new Error('Cannot reveal remote file in local filesystem');
 
   try {
-    shell.showItemInFolder(path.resolve(file.path));
+    shell.showItemInFolder(sanitizePath(path.resolve(file.path)));
     return true;
   } catch (err) {
     // todo: send error back to client

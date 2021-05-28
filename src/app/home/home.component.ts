@@ -1,8 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject  } from '@angular/core';
 import { Router } from '@angular/router';
 import { ElectronService } from '../core/services';
 import { File } from '../file';
 import { DndDropEvent } from 'ngx-drag-drop';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+
+export interface FolderDialogData {
+  folderName: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -30,7 +35,7 @@ export class HomeComponent implements OnInit {
   private remoteCrumbs: Array<any>;
   private localCrumbs: Array<any>;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, public dialog: MatDialog) { }
 
   async ngOnInit(): Promise<void> {
     let res = await this.electronService.ipcRenderer.invoke('ping');
@@ -38,7 +43,54 @@ export class HomeComponent implements OnInit {
     await this.listFiles(this.localPWD);
   }
 
-  async listFiles(file: File) {
+  async connect(): Promise<void> {
+    console.log('Connecting...');
+    console.log(this.host + ':' + this.port + ', ' + this.user + ', ' + this.pass + ', ' + this.protocol);
+    try {
+      this.isConnected = await this.electronService.ipcRenderer.invoke('connect', this.host, this.port, this.user, this.pass, this.protocol);
+      
+      if (this.isConnected) {
+        this.remotePWD = File.fromObject(await this.electronService.ipcRenderer.invoke('homedir', true));
+        await this.listFiles(this.remotePWD);
+      } else {
+        throw new Error('Unable to connect for unknown reason');
+      }
+    } catch (err) {
+      // todo: handle in ui
+      console.error(err);
+    }
+  }
+
+  async createFolder(remote: boolean): Promise<void> {
+    if (remote && !this.isConnected) throw new Error('Cannot create remote directory without remote connection');
+    
+    const dialogRef = this.dialog.open(FolderNameDialog, {
+      width: '320px',
+      data: { folderName: '' }
+    });
+
+    dialogRef.afterClosed().subscribe(async (folderName: string): Promise<void> => {
+      if (folderName?.length > 0) {
+        let file: File = new File((remote ? this.remotePWD.path : this.localPWD.path) + '/' + folderName, true, remote);
+        console.log(file.path);
+        await this.mkdir(file);
+      }
+    });
+  }
+
+  async mkdir(file: File) {
+    if (file.isRemote && !this.isConnected) throw new Error('Cannot create remote directory without remote connection');
+
+    try {
+      await this.electronService.ipcRenderer.invoke('mkdir', file);
+      await this.listFiles(file.isRemote ? this.remotePWD : this.localPWD);
+    } catch (err) {
+      // todo: handle in ui
+      console.error(err);
+    }
+  }
+
+  async listFiles(file: File): Promise<void> {
     if (!this.isConnected && file.isRemote) throw new Error('Not connected to FTP server');
     if (!file.isDirectory) throw new Error('Cannot list files of non-directory');
 
@@ -77,24 +129,6 @@ export class HomeComponent implements OnInit {
         this.localPWD = file;
         this.localCrumbs = crumbs;
         this.localFiles = files;
-      }
-    } catch (err) {
-      // todo: handle in ui
-      console.error(err);
-    }
-  }
-
-  async connect(): Promise<void> {
-    console.log('Connecting...');
-    console.log(this.host + ':' + this.port + ', ' + this.user + ', ' + this.pass + ', ' + this.protocol);
-    try {
-      this.isConnected = await this.electronService.ipcRenderer.invoke('connect', this.host, this.port, this.user, this.pass, this.protocol);
-      
-      if (this.isConnected) {
-        this.remotePWD = File.fromObject(await this.electronService.ipcRenderer.invoke('homedir', true));
-        await this.listFiles(this.remotePWD);
-      } else {
-        throw new Error('Unable to connect for unknown reason');
       }
     } catch (err) {
       // todo: handle in ui
@@ -185,6 +219,20 @@ export class HomeComponent implements OnInit {
     } else {
       throw new Error('Cannot copy a local or remote file to same location');
     }
+  }
+}
+
+@Component({
+  selector: 'folder-name-dialog',
+  templateUrl: 'folder-name-dialog.html',
+})
+export class FolderNameDialog {
+  constructor(
+    public dialogRef: MatDialogRef<FolderNameDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: FolderDialogData) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
   }
 
 }

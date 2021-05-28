@@ -12,13 +12,16 @@ import { DndModule } from 'ngx-drag-drop';
 
 import { HomeRoutingModule } from './home-routing.module';
 
-import { HomeComponent } from './home.component';
+import { FolderNameDialog, HomeComponent } from './home.component';
 import { SharedModule } from '../shared/shared.module';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
-  declarations: [HomeComponent],
-  imports: [CommonModule, SharedModule, HomeRoutingModule, BrowserAnimationsModule,
+  declarations: [HomeComponent, FolderNameDialog],
+  imports: [
+    CommonModule, SharedModule, HomeRoutingModule, BrowserAnimationsModule,
     MatButtonModule, MatInputModule, MatFormFieldModule, MatIconModule, MatMenuModule,
-    MatSelectModule, DndModule]
+    MatSelectModule, DndModule, MatDialogModule
+  ]
 })
 export class HomeModule {}

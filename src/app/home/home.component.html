@@ -53,6 +53,10 @@
             </span>
           </div>
 
+          <div class="px-3 pt-2">
+            <button mat-raised-button (click)="createFolder(false)">Create Folder</button>
+          </div>
+
           <ul class="listings" dndDropzone (dndDrop)="onFileDrop($event, false)">
             <li class="listing px-3 py-2" *ngFor="let file of localFiles" (dblclick)="open(file)" [dndDraggable]="file">
               <mat-icon aria-hidden="false" aria-label="Folder" *ngIf="file.isDirectory">folder_open</mat-icon>
@@ -94,6 +98,10 @@
               <span class="crumb-name" *ngIf="crumb.fileName">{{crumb.fileName}}</span>
               <mat-icon aria-hidden="false" aria-label="Chevron" *ngIf="!last">chevron_right</mat-icon>
             </span>
+          </div>
+
+          <div class="px-3 pt-2" *ngIf="isConnected">
+            <button mat-raised-button (click)="createFolder(true)">Create Folder</button>
           </div>
 
           <ul class="listings" dndDropzone (dndDrop)="onFileDrop($event, true)">
